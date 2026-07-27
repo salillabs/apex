@@ -1,0 +1,13 @@
+.env
+CLAUDE.md
+projects.yaml
+docs/research/
+docs/contracts/
+__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/

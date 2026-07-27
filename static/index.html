@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX</title>
+<link rel="icon" type="image/png" href="/static/favicon.png">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-2: #1c2128;
+  --border: #21262d;
+  --border-mid: #30363d;
+  --text: #e6edf3;
+  --text-2: #d1dae4;
+  --muted: #9ba8b5;
+  --subtle: #7a8694;
+  --green: #3fb950;
+  --green-dim: #238636;
+  --green-h: #2ea043;
+  --blue: #1f6feb;
+  --blue-soft: #58a6ff;
+  --blue-h: #388bfd;
+  --red: #f85149;
+  --yellow: #d29922;
+  --purple: #8957e5;
+  --nav: 210px;
+}
+
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── Header ── */
+header { height: 48px; padding: 0 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; flex-shrink: 0; background: var(--surface); }
+.logo { font-size: 14px; font-weight: 600; color: var(--text-2); letter-spacing: 0.3px; }
+.logo strong { color: var(--text); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.dot.err { background: var(--red); }
+
+/* ── Layout ── */
+.layout { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Sidebar ── */
+nav { width: var(--nav); border-right: 1px solid var(--border); padding: 16px 0; overflow-y: auto; flex-shrink: 0; background: var(--surface); }
+.nav-label { font-size: 10px; font-weight: 700; color: var(--subtle); text-transform: uppercase; letter-spacing: 1px; padding: 0 16px 10px; }
+.nav-item { padding: 8px 16px; font-size: 13px; cursor: pointer; color: var(--text-2); border-left: 2px solid transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.15s; display: flex; align-items: center; gap: 9px; }
+.nav-item:hover { color: var(--text); background: var(--surface-2); }
+.nav-item.active { color: var(--blue-soft); border-left-color: var(--blue-soft); background: #58a6ff0e; font-weight: 500; }
+.nav-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+/* ── Main ── */
+main { flex: 1; overflow-y: auto; padding: 24px 28px; display: flex; flex-direction: column; gap: 24px; }
+
+
+.section { border-top: 1px solid var(--border); padding-top: 22px; }
+.sec-label { font-size: 11px; font-weight: 700; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+
+/* ── Command panel ── */
+.cmd-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.cmd-quick { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; background: var(--surface-2); }
+.qa { padding: 4px 11px; border-radius: 5px; border: 1px solid var(--border-mid); background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.qa:hover { background: var(--border-mid); border-color: var(--muted); }
+.cmd-row { display: flex; }
+.cmd-prompt { padding: 11px 14px; font-size: 13px; color: var(--subtle); font-family: 'SF Mono', Consolas, monospace; border-right: 1px solid var(--border); flex-shrink: 0; }
+.cmd-input { flex: 1; background: transparent; border: none; color: var(--text); font-size: 13px; padding: 11px 14px; font-family: 'SF Mono', Consolas, monospace; outline: none; }
+.cmd-input::placeholder { color: #484f58; font-style: italic; }
+.cmd-send { padding: 0 20px; background: var(--blue); color: #fff; border: none; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 500; transition: background 0.15s; letter-spacing: 0.2px; }
+.cmd-send:hover { background: var(--blue-h); }
+.cmd-send:disabled { opacity: 0.4; cursor: default; }
+.cmd-out { display: none; border-top: 1px solid var(--border); background: #090d12; }
+.cmd-out.show { display: block; }
+.cmd-out-label { display: flex; align-items: center; gap: 8px; padding: 6px 14px; font-size: 10px; font-weight: 700; color: var(--blue-soft); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); background: #58a6ff08; }
+.cmd-out-title { flex: 1; }
+.cmd-clear { background: var(--surface-2); border: 1px solid var(--border-mid); color: var(--text); cursor: pointer; font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 5px; font-family: inherit; transition: all 0.15s; }
+.cmd-clear:hover { background: var(--surface); border-color: var(--muted); }
+.cmd-out-body { padding: 14px 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; line-height: 1.7; color: var(--text-2); max-height: 320px; overflow-y: auto; }
+.cmd-out.loading .cmd-out-body { color: var(--green); }
+
+/* ── Cards ── */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card + .card { margin-top: 8px; }
+.card-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.card-meta { font-size: 12px; color: var(--subtle); margin-bottom: 10px; }
+.card-reason { font-size: 13px; color: var(--text); line-height: 1.65; margin-bottom: 14px; white-space: pre-wrap; }
+.card-actions { display: flex; gap: 8px; }
+
+/* ── Buttons ── */
+button { font-family: inherit; }
+.btn-approve { padding: 6px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; background: var(--green-dim); color: #fff; transition: background 0.15s; }
+.btn-approve:hover:not(:disabled) { background: var(--green-h); }
+.btn-reject { padding: 6px 16px; border-radius: 6px; border: 1px solid var(--border-mid); cursor: pointer; font-size: 13px; font-weight: 500; background: transparent; color: var(--text-2); transition: all 0.15s; }
+.btn-reject:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted); }
+button:disabled { opacity: 0.4; cursor: default; }
+.btn-primary { padding: 7px 20px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; background: var(--blue); color: #fff; transition: background 0.15s; }
+.btn-primary:hover:not(:disabled) { background: var(--blue-h); }
+
+/* ── Table ── */
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 9px 14px; color: var(--subtle); font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+td { padding: 11px 14px; color: var(--text); border-bottom: 1px solid var(--border-mid); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface-2); }
+.mono { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; color: var(--subtle); }
+
+/* ── Badges ── */
+.badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-new { background: #1f6feb1a; color: var(--blue-soft); border: 1px solid #1f6feb30; }
+.badge-in_progress { background: #d299221a; color: #e3b341; border: 1px solid #d2992230; }
+.badge-review { background: #8957e51a; color: #c084fc; border: 1px solid #8957e530; }
+.badge-merged { background: #3fb9501a; color: var(--green); border: 1px solid #3fb95030; }
+.badge-done { background: #3fb9501a; color: #6ee7b7; border: 1px solid #3fb95030; }
+.badge-failed { background: #f851491a; color: var(--red); border: 1px solid #f8514930; }
+.badge-default { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border-mid); }
+.badge-task { background: #1f6feb1a; color: var(--blue-soft); border: 1px solid #1f6feb30; }
+.badge-query { background: #8957e51a; color: #c084fc; border: 1px solid #8957e530; }
+
+/* ── Build form ── */
+.build-form { display: flex; gap: 12px; align-items: flex-end; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 11px; font-weight: 600; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.5px; }
+input[type=number] { background: var(--surface-2); border: 1px solid var(--border-mid); color: var(--text); padding: 8px 12px; border-radius: 6px; font-size: 13px; width: 130px; font-family: inherit; transition: border-color 0.15s; }
+input[type=number]:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px #1f6feb18; }
+
+.empty { padding: 20px; text-align: center; color: var(--subtle); font-size: 13px; }
+
+/* ── Page tabs ── */
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+.tab { padding: 10px 20px; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--blue-soft); border-bottom-color: var(--blue-soft); }
+
+/* ── Toast ── */
+#toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface-2); border: 1px solid var(--border-mid); border-radius: 8px; padding: 10px 18px; font-size: 13px; color: var(--text-2); display: none; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
+
+.placeholder { padding: 80px 20px; text-align: center; color: var(--subtle); font-size: 14px; }
+
+/* ── Help modal ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: #0d1117; border: 1px solid var(--border-mid); border-radius: 12px; padding: 28px 32px; width: 100%; max-width: 520px; max-height: 80vh; overflow-y: auto; }
+.modal-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+.modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; padding: 0; line-height: 1; }
+.modal-close:hover { color: var(--text); }
+.cmd-list { display: flex; flex-direction: column; gap: 10px; }
+.cmd-entry { display: flex; gap: 14px; align-items: flex-start; }
+.cmd-name { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; color: var(--blue-soft); background: #1f6feb12; border: 1px solid #1f6feb25; border-radius: 4px; padding: 2px 8px; white-space: nowrap; flex-shrink: 0; min-width: 160px; }
+.cmd-desc { font-size: 12px; color: var(--muted); line-height: 1.5; padding-top: 2px; }
+.modal-section { font-size: 10px; font-weight: 700; color: var(--subtle); text-transform: uppercase; letter-spacing: 1px; margin: 18px 0 10px; }
+.help-btn { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--blue-soft); background: transparent; color: var(--blue-soft); font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; transition: all 0.15s; flex-shrink: 0; }
+.help-btn:hover { background: #58a6ff18; color: var(--text); }
+
+/* ── Footer ── */
+footer { flex-shrink: 0; padding: 10px 20px; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--subtle); background: var(--bg); border-top: 1px solid var(--border); }
+footer a { color: var(--muted); text-decoration: none; font-weight: 600; transition: color 0.15s; }
+footer a:hover { color: var(--blue-soft); }
+.footer-sep { color: var(--border-mid); font-size: 14px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+.md h1,.md h2,.md h3 { color: var(--text); font-weight:600; margin:12px 0 6px; }
+.md h1 { font-size:15px; } .md h2 { font-size:14px; } .md h3 { font-size:13px; }
+.md p { margin-bottom:8px; color: var(--text-2); line-height:1.65; }
+.md ul,.md ol { padding-left:20px; margin-bottom:8px; color:var(--text-2); }
+.md li { margin-bottom:3px; line-height:1.6; }
+.md code { background:#0d1117; color:#b3d0f0; padding:2px 6px; border-radius:4px; font-family:'SF Mono',Consolas,monospace; font-size:11px; }
+.md pre { background:#0d1117; padding:12px; border-radius:6px; overflow-x:auto; margin-bottom:8px; border:1px solid var(--border); }
+.md pre code { background:none; padding:0; color:#b3d0f0; font-size:12px; }
+.md strong { color:var(--text); font-weight:600; }
+.md a { color:var(--blue-soft); text-decoration:none; }
+.md hr { border:none; border-top:1px solid var(--border); margin:10px 0; }
+.md blockquote { border-left:3px solid var(--border-mid); padding-left:12px; color:var(--muted); margin:8px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="/static/apex-logo.png" alt="APEX" style="height:36px; width:auto;">
+  <span class="logo"><strong>SalilLabs</strong> <span style="color:var(--subtle);font-weight:300;margin:0 4px">|</span> APEX</span>
+  <span id="header-project" style="display:none;align-items:center;margin-left:16px">
+    <span id="header-project-name" style="background:#1f6feb22;color:var(--blue-soft);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;padding:3px 12px;border-radius:4px;border:1px solid #1f6feb44"></span>
+  </span>
+  <span style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)">
+    <span class="dot" id="status-dot"></span>
+    <span id="status-label">Online</span>
+  </span>
+</header>
+
+<div class="modal-overlay" id="help-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-title">
+      Command Reference
+      <button class="modal-close" onclick="document.getElementById('help-modal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-section">Quick Actions</div>
+    <div class="cmd-list">
+      <div class="cmd-entry"><span class="cmd-name">--next</span><span class="cmd-desc">List open GitHub issues ready to build</span></div>
+      <div class="cmd-entry"><span class="cmd-name">--status</span><span class="cmd-desc">Show active build queue for this project</span></div>
+      <div class="cmd-entry"><span class="cmd-name">--shipped</span><span class="cmd-desc">Show recently merged PRs</span></div>
+      <div class="cmd-entry"><span class="cmd-name">--report</span><span class="cmd-desc">Show last test report from history</span></div>
+      <div class="cmd-entry"><span class="cmd-name">--review</span><span class="cmd-desc">Review recent code changes</span></div>
+      <div class="cmd-entry"><span class="cmd-name">--test</span><span class="cmd-desc">Run the test suite and report results</span></div>
+    </div>
+    <div class="modal-section">Build</div>
+    <div class="cmd-list">
+      <div class="cmd-entry"><span class="cmd-name">--build #42</span><span class="cmd-desc">Implement issue #42 only — no tests, no approval</span></div>
+      <div class="cmd-entry"><span class="cmd-name">--build US-32</span><span class="cmd-desc">Build by user story ID — looks up the matching GitHub issue by title</span></div>
+      <div class="cmd-entry"><span class="cmd-name">--add-tests #42</span><span class="cmd-desc">Write tests for an already-built feature on its branch</span></div>
+      <div class="cmd-entry"><span class="cmd-name">--ship #42</span><span class="cmd-desc">Full pipeline: implement → write tests → run tests → PR → approval to merge</span></div>
+    </div>
+    <div class="modal-section">Ask Anything</div>
+    <div class="cmd-list">
+      <div class="cmd-entry"><span class="cmd-name">your question</span><span class="cmd-desc">Ask anything about the codebase — architecture, decisions, recent changes</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <nav>
+    <div class="nav-label">Projects</div>
+    <div id="nav-projects"><div style="padding:8px 14px;font-size:12px;color:var(--muted)">Loading…</div></div>
+  </nav>
+
+  <main id="main">
+    <div class="placeholder">Select a project</div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<footer>
+  <span>Built by <a href="https://salillabs.in" target="_blank">SalilLabs</a></span>
+  <span class="footer-sep">·</span>
+  <span>APEX — Autonomous Engineering</span>
+  <span style="margin-left:auto">Support: <a href="mailto:support@salillabs.in">support@salillabs.in</a></span>
+</footer>
+
+
+<script>
+let projects = [];
+let selected = null;
+let currentPage = 'dashboard';
+let tasksOffset = 0;
+const TASKS_PAGE = 20;
+const expandedIds = new Set();
+
+function badge(s) {
+  const cls = { new: 'badge-new', in_progress: 'badge-in_progress', review: 'badge-review', merged: 'badge-merged', done: 'badge-done', failed: 'badge-failed' }[s] || 'badge-default';
+  return `<span class="badge ${cls}">${s.replace('_', ' ')}</span>`;
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.display = 'none', 3000);
+}
+
+async function loadProjects() {
+  const res = await fetch('/api/projects');
+  projects = await res.json();
+  const nav = document.getElementById('nav-projects');
+  if (!projects.length) {
+    nav.innerHTML = '<div style="padding:8px 14px;font-size:12px;color:var(--muted)">No projects</div>';
+    return;
+  }
+  nav.innerHTML = projects.map(p => `
+    <div class="nav-item" id="nav-${p.repo.replace('/', '_')}" onclick="pick('${p.repo}')">
+      <span class="nav-pip"></span>${p.name}
+    </div>
+  `).join('');
+  pick(projects[0].repo);
+}
+
+function pick(repo) {
+  selected = projects.find(p => p.repo === repo);
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`nav-${repo.replace('/', '_')}`);
+  if (el) el.classList.add('active');
+  const hp = document.getElementById('header-project');
+  if (hp) {
+    document.getElementById('header-project-name').textContent = selected.name;
+    hp.style.display = 'flex';
+  }
+  currentPage = 'dashboard';
+  expandedIds.clear();
+  renderMain();
+  refresh();
+}
+
+function renderMain() {
+  document.getElementById('main').innerHTML = `
+    <div class="tabs">
+      <div class="tab active" id="page-tab-dashboard" onclick="switchPage('dashboard')">Dashboard</div>
+      <div class="tab" id="page-tab-tasks" onclick="switchPage('tasks')">Tasks</div>
+    </div>
+    <div id="page-content"></div>
+  `;
+  switchPage(currentPage);
+}
+
+function switchPage(page) {
+  currentPage = page;
+  const d = document.getElementById('page-tab-dashboard');
+  const t = document.getElementById('page-tab-tasks');
+  if (d) d.className = 'tab' + (page === 'dashboard' ? ' active' : '');
+  if (t) t.className = 'tab' + (page === 'tasks' ? ' active' : '');
+  expandedIds.clear();
+  if (page === 'dashboard') renderDashboard();
+  else renderTasksPage();
+}
+
+function renderDashboard() {
+  document.getElementById('page-content').innerHTML = `
+    <section class="section">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <div class="sec-label" style="margin-bottom:0">Commands</div>
+        <button class="help-btn" onclick="document.getElementById('help-modal').classList.add('open')" title="Command help">?</button>
+      </div>
+      <div class="cmd-panel">
+        <div class="cmd-quick">
+          <button class="qa" onclick="run('--next')">Next Issues</button>
+          <button class="qa" onclick="run('--status')">Status</button>
+          <button class="qa" onclick="run('--shipped')">Shipped</button>
+          <button class="qa" onclick="run('--report')">Test Report</button>
+          <button class="qa" onclick="run('--review')">Review Code</button>
+          <button class="qa" onclick="run('--test')">Run Tests</button>
+          <span id="cmd-status" style="display:none;align-items:center;gap:8px;margin-left:auto">
+            <span id="cmd-status-badge"></span>
+            <button class="cmd-clear" onclick="clearOutput()">Clear</button>
+          </span>
+        </div>
+        <div class="cmd-row">
+          <span class="cmd-prompt">&gt;</span>
+          <input class="cmd-input" id="cmd" placeholder="--build #42  or ask anything about the codebase…" onkeydown="if(event.key==='Enter')send()">
+          <button class="cmd-send" id="cmd-btn" onclick="send()">Send</button>
+        </div>
+        <div class="cmd-out" id="cmd-out"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sec-label">Work on GitHub Issue</div>
+      <div class="card">
+        <div class="build-form">
+          <div class="field">
+            <label>User Story ID / Issue ID #</label>
+            <input type="number" id="issue-num" placeholder="42" min="1">
+          </div>
+          <button class="btn-primary" id="build-btn" onclick="build()">Start</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sec-label">Pending Approvals</div>
+      <div id="approvals"><div class="empty">Loading…</div></div>
+    </section>
+  `;
+  loadApprovals();
+}
+
+function renderTasksPage() {
+  document.getElementById('page-content').innerHTML = `<div id="tasks"><div class="empty">Loading…</div></div>`;
+  tasksOffset = 0;
+  loadTasks(true);
+}
+
+async function run(cmd) {
+  document.getElementById('cmd').value = cmd;
+  await send();
+}
+
+async function send() {
+  const input = document.getElementById('cmd');
+  const text = input.value.trim();
+  if (!text || !selected) return;
+
+  const out = document.getElementById('cmd-out');
+  const btn = document.getElementById('cmd-btn');
+  const cs = document.getElementById('cmd-status');
+  if (cs) cs.style.display = 'none';
+  out.className = 'cmd-out show loading';
+  out.innerHTML = `<div class="cmd-out-label"><span class="cmd-out-title">APEX</span></div><div class="cmd-out-body">Running…</div>`;
+  btn.disabled = true;
+
+  const showStatus = (ok) => {
+    const badge = ok
+      ? `<span class="badge badge-done" style="font-size:10px;padding:1px 8px;text-transform:none;letter-spacing:0">Done</span>`
+      : `<span class="badge badge-failed" style="font-size:10px;padding:1px 8px;text-transform:none;letter-spacing:0">Failed</span>`;
+    const sb = document.getElementById('cmd-status-badge');
+    const cs = document.getElementById('cmd-status');
+    if (sb) sb.innerHTML = badge;
+    if (cs) cs.style.display = 'flex';
+  };
+
+  try {
+    const res = await fetch('/api/command', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ repo: selected.repo, text }),
+    });
+    const data = await res.json();
+    out.className = 'cmd-out show';
+    const raw = data.response || data.detail || 'Done.';
+    out.innerHTML = `<div class="cmd-out-label"><span class="cmd-out-title">APEX</span></div><div class="cmd-out-body md">${marked.parse(raw)}</div>`;
+    showStatus(res.ok);
+    if (text.startsWith('--build') || text.startsWith('--ship') || text.startsWith('--add-tests')) {
+      input.value = '';
+      setTimeout(() => switchPage('tasks'), 1500);
+    }
+  } catch (e) {
+    out.className = 'cmd-out show';
+    out.innerHTML = `<div class="cmd-out-label"><span class="cmd-out-title">APEX</span></div><div class="cmd-out-body" style="color:var(--red)">Error: ${e.message}</div>`;
+    showStatus(false);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function clearOutput() {
+  const out = document.getElementById('cmd-out');
+  if (out) { out.className = 'cmd-out'; out.innerHTML = ''; }
+  const cs = document.getElementById('cmd-status');
+  if (cs) cs.style.display = 'none';
+  const inp = document.getElementById('cmd');
+  if (inp) inp.value = '';
+}
+
+async function loadApprovals() {
+  if (!selected) return;
+  const res = await fetch('/api/approvals/pending');
+  const list = await res.json();
+  const filtered = list.filter(a => a.repo === selected.repo);
+  const el = document.getElementById('approvals');
+  if (!el) return;
+  if (!filtered.length) { el.innerHTML = '<div class="empty">No pending approvals</div>'; return; }
+  el.innerHTML = filtered.map(a => `
+    <div class="card">
+      <div class="card-title">Task <span class="mono">${a.task_id}</span></div>
+      <div class="card-meta">${new Date(a.requested_at).toLocaleString()}</div>
+      <div class="card-reason">${a.reason}</div>
+      <div class="card-actions">
+        <button class="btn-approve" onclick="decide('${a.id}','approved',this)">Approve</button>
+        <button class="btn-reject" onclick="decide('${a.id}','rejected',this)">Reject</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadTasks(reset = false) {
+  if (!selected) return;
+  if (reset) tasksOffset = 0;
+  const el = document.getElementById('tasks');
+  if (!el) return;
+  const res = await fetch(`/api/tasks?repo=${encodeURIComponent(selected.repo)}&limit=${TASKS_PAGE}&offset=${tasksOffset}`);
+  const items = await res.json();
+
+  if (reset) el.innerHTML = '';
+
+  if (!items.length && tasksOffset === 0) {
+    el.innerHTML = '<div class="empty">No tasks yet</div>';
+    return;
+  }
+
+  if (items.length) {
+    const rows = items.map((t) => {
+      const eid = `task-exp-${t.task_id}`;
+      const expandContent = t.response
+        ? `<div style="margin-bottom:8px">
+             <span style="background:#1f6feb22;color:var(--blue-soft);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;padding:2px 8px;border-radius:4px;border:1px solid #1f6feb44">Request</span>
+           </div>
+           <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;line-height:1.6;white-space:pre-wrap">${t.title}</div>
+           <div style="margin-bottom:8px">
+             <span style="background:#1f6feb22;color:var(--blue-soft);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;padding:2px 8px;border-radius:4px;border:1px solid #1f6feb44">APEX Response</span>
+           </div>
+           <div class="md">${marked.parse(t.response)}</div>`
+        : `<div style="white-space:pre-wrap;color:var(--text);font-size:13px;line-height:1.6">${t.title}</div>`;
+      return `
+        <tr style="cursor:pointer" onclick="toggleExpand('${eid}', this)">
+          <td class="mono">${t.task_id}</td>
+          <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.title}</td>
+          <td><span class="badge badge-${t.type || 'task'}">${t.type === 'query' ? 'Query' : 'Task'}</span></td>
+          <td>${badge(t.status)}</td>
+          <td style="color:var(--subtle);font-size:12px;white-space:nowrap">${t.updated_at}</td>
+        </tr>
+        <tr id="${eid}" style="display:none">
+          <td colspan="5" style="padding:16px 18px;font-size:13px;color:var(--text-2);line-height:1.7;background:var(--surface-2);border-bottom:2px solid var(--border-mid)">${expandContent}</td>
+        </tr>`;
+    }).join('');
+
+    if (tasksOffset === 0) {
+      el.innerHTML = `<div class="table-wrap"><table style="table-layout:fixed;width:100%">
+        <colgroup>
+          <col style="width:80px">
+          <col>
+          <col style="width:72px">
+          <col style="width:90px">
+          <col style="width:110px">
+        </colgroup>
+        <thead><tr><th>ID</th><th>Title</th><th>Type</th><th>Status</th><th>Updated</th></tr></thead>
+        <tbody id="tasks-body">${rows}</tbody>
+      </table></div>`;
+    } else {
+      document.getElementById('tasks-body').insertAdjacentHTML('beforeend', rows);
+    }
+    tasksOffset += items.length;
+
+    expandedIds.forEach(tid => {
+      const expRow = document.getElementById(`task-exp-${tid}`);
+      const mainRow = expRow?.previousElementSibling;
+      if (expRow) { expRow.style.display = 'table-row'; if (mainRow) mainRow.style.background = 'var(--surface-2)'; }
+    });
+  }
+
+  const moreBtn = document.getElementById('tasks-more');
+  if (moreBtn) moreBtn.remove();
+  if (items.length === TASKS_PAGE) {
+    el.insertAdjacentHTML('beforeend', `<button class="qa" id="tasks-more" style="margin-top:8px" onclick="loadTasks()">Load More</button>`);
+  }
+}
+
+function toggleExpand(id, row) {
+  const exp = document.getElementById(id);
+  if (!exp) return;
+  const open = exp.style.display !== 'none';
+  exp.style.display = open ? 'none' : 'table-row';
+  row.style.background = open ? '' : 'var(--surface-2)';
+  const tid = id.replace('task-exp-', '');
+  open ? expandedIds.delete(tid) : expandedIds.add(tid);
+}
+
+async function decide(id, decision, btn) {
+  btn.closest('.card-actions').querySelectorAll('button').forEach(b => b.disabled = true);
+  await fetch(`/debug/approve/${id}?decision=${decision}`, { method: 'POST' });
+  toast(`Decision: ${decision}`);
+  loadApprovals();
+}
+
+async function build() {
+  const num = parseInt(document.getElementById('issue-num').value);
+  if (!num) { toast('Enter an issue number'); return; }
+  const btn = document.getElementById('build-btn');
+  btn.disabled = true; btn.textContent = 'Starting…';
+  try {
+    const res = await fetch('/api/build', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ repo: selected.repo, issue_number: num }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      toast(`Started: ${data.title}`);
+      document.getElementById('issue-num').value = '';
+      setTimeout(() => switchPage('tasks'), 1500);
+    } else {
+      toast(`Error: ${data.detail}`);
+    }
+  } finally { btn.disabled = false; btn.textContent = 'Start'; }
+}
+
+async function refresh() {
+  try {
+    if (currentPage === 'dashboard') await loadApprovals();
+    else await loadTasks(true);
+    document.getElementById('status-dot').className = 'dot';
+    document.getElementById('status-label').textContent = 'Online';
+  } catch {
+    document.getElementById('status-dot').className = 'dot err';
+    document.getElementById('status-label').textContent = 'Offline';
+  }
+}
+
+loadProjects();
+setInterval(refresh, 10000);
+</script>
+</body>
+</html>

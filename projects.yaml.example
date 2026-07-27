@@ -1,0 +1,15 @@
+# Managed projects — APEX only processes GitHub issues from repos listed here.
+# Copy this file to projects.yaml (gitignored) and fill in your values.
+# Add a repo and restart APEX to onboard it. Remove or set active: false to pause.
+
+- repo: your-org/your-project
+  name: Your Project
+  priority: 5
+  local_path: /path/to/local/clone/your-project
+  slack_channel: CXXXXXXXXXX
+
+- repo: your-org/another-project
+  name: Another Project
+  priority: 3
+  local_path: /path/to/local/clone/another-project
+  slack_channel: CXXXXXXXXXX
