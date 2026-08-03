@@ -110,6 +110,8 @@ APEX listens on `http://localhost:8000`.
 
 APEX ships a built-in dashboard at `http://localhost:8000`.
 
+![APEX Web UI](static/apex-ui.png)
+
 ### Features
 
 **Sidebar** — lists every project from `projects.yaml`; click one to switch context.
