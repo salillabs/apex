@@ -115,7 +115,7 @@ APEX ships a built-in dashboard at `http://localhost:8000`.
 **Sidebar** — lists every project from `projects.yaml`; click one to switch context.
 
 **Dashboard tab** (per project):
-- **Commands panel** — quick-action buttons (`Next Issues`, `Status`, `Shipped`, `Test Report`, `Review Code`, `Run Tests`) and a free-text input that accepts any `--build #42` command or a natural-language question about the codebase. Responses are rendered inline with Markdown.
+- **Commands panel** — quick-action buttons (`Next Issues`, `Status`, `Shipped`, `Test Report`, `Review Code`, `Run Tests`) and a free-text input that accepts any `--build #42`, `--add-tests #42`, or `--ship #42` command, or a natural-language question about the codebase. Responses are rendered inline with Markdown.
 - **Work on GitHub Issue** — enter an issue number and click Start to trigger the full engineering loop (Engineering Manager → Architect → Developer → QA → Reviewer → Reporter). Approvals surface in the Pending Approvals panel below.
 - **Pending Approvals** — all decisions waiting for a human (architecture reviews, test-failure retries, PR merges) appear here with Approve / Reject buttons.
 
@@ -130,7 +130,10 @@ APEX ships a built-in dashboard at `http://localhost:8000`.
 
 ```
 @apex --next                List open issues ready to build
-@apex --build #42           Build issue #42 (or --build #42 #43 for multiple)
+@apex --build #42           Implement issue #42 only (no tests, no PR)
+@apex --add-tests #42       Write tests for the already-built feature branch
+@apex --ship #42            Full pipeline: implement → tests → PR → approval to merge
+@apex --history             Show recently completed and failed tasks
 @apex --shipped             Show recently merged PRs
 @apex --status              Show active build queue
 @apex --review              Review recent code changes
@@ -140,6 +143,14 @@ APEX ships a built-in dashboard at `http://localhost:8000`.
 @apex --help                Show this message
 @apex <question>            Ask anything about the codebase
 ```
+
+### Build Commands
+
+| Command | What it does |
+|---------|-------------|
+| `--build #42` | Implement only — commits the code and pushes a branch. No tests written, no PR created. Use when you want to inspect the code before deciding on next steps. |
+| `--add-tests #42` | Find the feature branch for issue #42, read what was changed, write comprehensive tests, run them, and push. Run this after `--build`. |
+| `--ship #42` | Full end-to-end: implement → write tests → run tests → create PR → send approval card. Approve in Slack or the Web UI to merge. |
 
 ---
 
@@ -296,7 +307,13 @@ prompts/
 ├── qa.md                    ← How to evaluate tests, write bug reports
 ├── reviewer.md              ← Code review standards
 ├── reporter.md              ← Completion summary format
-└── knowledge_curator.md     ← How to store and retrieve project knowledge
+├── knowledge_curator.md     ← How to store and retrieve project knowledge
+├── build.md                 ← Prompt for --build (implement only)
+├── add_tests.md             ← Prompt for --add-tests (write tests for built branch)
+├── ship.md                  ← Prompt for --ship (full pipeline: implement → tests → PR)
+├── test.md                  ← Prompt for --test (run test suite)
+├── review.md                ← Prompt for --review (review recent code changes)
+└── question.md              ← Prompt for freeform questions about the codebase
 ```
 
 ---
